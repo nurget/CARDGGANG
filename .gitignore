@@ -1,0 +1,9 @@
+# Internal product planning and design documents
+/docs/
+
+# Node.js build and local files
+node_modules/
+dist/
+dist-ssr/
+*.local
+.DS_Store
