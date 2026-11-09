@@ -160,8 +160,9 @@ function App() {
         <div className="capture-column">
           <div className="capture-heading">
             <div>
-              <p className="eyebrow">CARDGGANG · PHOTO CARD</p>
-              <h1>포토카드 만들기</h1>
+              <p className="eyebrow"><span className="eyebrow-star">✳</span> 나만의 작은 순간</p>
+              <h1>오늘의 나를<br className="mobile-break" /> 담아볼까요?</h1>
+              <p className="heading-note">사진 한 장으로 포토카드를 만들어요.</p>
             </div>
           </div>
 
@@ -170,17 +171,31 @@ function App() {
             {cameraOn && !photoUrl && <video ref={videoRef} className="camera-media" autoPlay muted playsInline aria-label="웹캠 미리보기" />}
             {photoUrl && <img className="camera-media" src={photoUrl} alt="포토카드에 사용할 사진" />}
             {!cameraOn && !photoUrl && (
-              <div className="booth-illustration" aria-hidden="true">
-                <svg viewBox="0 0 240 260" role="presentation">
-                  <path d="M47 239V86c0-37 27-66 67-66h12c40 0 67 29 67 66v153" />
-                  <path d="M36 239h169M59 91c0-29 22-51 54-51h15c31 0 53 22 53 51v132H59z" />
-                  <path d="M82 95c0-20 13-35 33-35h11c20 0 33 15 33 35v111H82z" />
-                  <path d="M93 103c10 9 20 9 30 0s20-9 30 0M93 119c10 9 20 9 30 0s20-9 30 0M93 135c10 9 20 9 30 0s20-9 30 0M93 151c10 9 20 9 30 0s20-9 30 0" />
-                  <path d="M103 208v17m42-17v17M100 225h49" />
-                  <path d="M91 234c0 6 6 10 14 10h34c8 0 14-4 14-10" />
-                  <path d="M105 80h35m-18-17v35" />
-                </svg>
-                <span>카메라를 켜면 화면이 여기에 표시됩니다</span>
+              <div className="booth-placeholder" aria-hidden="true">
+                <span className="float-spark spark-left">✦</span>
+                <span className="float-heart">♥</span>
+                <div className="booth-scene">
+                  <div className="booth-shadow" />
+                  <div className="booth-model">
+                    <div className="booth-side" />
+                    <div className="booth-roof"><span className="roof-star">✳</span></div>
+                    <div className="booth-body">
+                      <div className="booth-sign">PHOTO<br />BOOTH</div>
+                      <div className="booth-screen">
+                        <div className="screen-curtain curtain-left" />
+                        <div className="screen-curtain curtain-right" />
+                        <div className="screen-face"><i /><i /><b /></div>
+                        <div className="booth-lens"><span /></div>
+                      </div>
+                      <div className="booth-control"><span /><span /><span /></div>
+                      <div className="booth-slot" />
+                    </div>
+                    <div className="booth-foot booth-foot-left" />
+                    <div className="booth-foot booth-foot-right" />
+                  </div>
+                </div>
+                <span className="float-spark spark-right">✦</span>
+                <div className="booth-hint"><span className="hint-dot" /> 카메라를 켜면 여기서 만나요</div>
               </div>
             )}
             <div className="stage-corner corner-one" />
@@ -207,7 +222,7 @@ function App() {
         </div>
 
         <aside className="card-column" aria-label="포토카드 미리보기">
-          <div className="preview-heading"><span>카드 미리보기</span><span className="preview-count">GG · 001</span></div>
+          <div className="preview-heading"><span>완성될 포토카드</span><span className="preview-count">NO. 001</span></div>
           <article className="trading-card">
             <div className="card-topline"><span>카드깡</span><span>001</span></div>
             <div className="card-picture">
@@ -219,10 +234,10 @@ function App() {
               )}
             </div>
             <div className="card-info">
-              <span className="card-edition">PHOTO CARD · 001</span>
+              <span className="card-edition">A LITTLE MOMENT · 001</span>
               <strong>{cardName.trim() || '이름'}</strong>
               <div className="card-rule" />
-              <span className="card-caption">CARDGGANG COLLECTION</span>
+              <span className="card-caption">MADE WITH LOVE <span>♡</span></span>
             </div>
           </article>
 
