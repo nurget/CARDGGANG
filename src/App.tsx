@@ -19,12 +19,14 @@ function App() {
   const photoRequestRef = useRef(0)
   const mountedRef = useRef(true)
   const helpRef = useRef<HTMLDialogElement>(null)
+  const previewRef = useRef<HTMLDialogElement>(null)
   const uploadRef = useRef<HTMLInputElement>(null)
   const [camera, setCamera] = useState<'off' | 'loading' | 'on'>('off')
   const [cameraReady, setCameraReady] = useState(false)
   const [photo, setPhoto] = useState<HTMLImageElement | null>(null)
   const [cardName, setCardName] = useState('')
-  const [frame, setFrame] = useState<Frame>('paper')
+  const [cardNote, setCardNote] = useState('')
+  const [frame, setFrame] = useState<Frame>('flame')
   const [crop, setCrop] = useState<Crop>(DEFAULT_CROP)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [message, setMessage] = useState('')
@@ -126,7 +128,7 @@ function App() {
       setPhoto(image)
       setCrop(DEFAULT_CROP)
       setTab('card')
-      setMessage('사진을 적용했습니다. 구도는 ‘사진 위치 조절’에서 바꿀 수 있어요.')
+      setMessage('사진을 적용했습니다. 구도는 ‘사진 위치’에서 바꿀 수 있어요.')
     } catch {
       if (mountedRef.current && request === photoRequestRef.current) setMessage('사진을 읽지 못했습니다. JPG, PNG 또는 WebP 파일을 선택해 주세요.')
     } finally {
@@ -265,18 +267,21 @@ function App() {
           <section className="card-panel" id="card-panel" aria-label="카드 편집">
             <div className="panel-heading"><span>02</span><h2>카드 만들기</h2><span className="panel-note">미리보기</span></div>
             <div className="card-display">
-              <div className="card-stack"><div className="card-back" aria-hidden="true" /><PhotoPreview card canvasRef={cardCanvasRef} image={photo} crop={crop} name={cardName} frame={frame} /></div>
+              <button className="card-preview-button" type="button" aria-label="카드를 크게 보기" title="카드를 크게 보기" onClick={() => previewRef.current?.showModal()}><span className="card-stack" data-frame={frame}><span className="card-back" aria-hidden="true" /><PhotoPreview card canvasRef={cardCanvasRef} image={photo} crop={crop} name={cardName} note={cardNote} frame={frame} /></span></button>
               <span className="sketch-note card-note" aria-hidden="true">이렇게 나와요.</span>
             </div>
             <div className="card-tools">
               <label className="name-field"><span>이름</span><input value={cardName} onChange={(event) => setCardName(event.currentTarget.value)} maxLength={18} placeholder="카드에 넣을 이름" autoComplete="off" /></label>
-              <fieldset className="frame-picker"><legend>프레임</legend><div>{(['paper', 'ink'] as const).map((option) => <button key={option} aria-pressed={frame === option} onClick={() => setFrame(option)} className={`frame-option ${option}`}><span aria-hidden="true" />{option === 'paper' ? '화이트' : '블랙'}</button>)}</div></fieldset>
-              {photo && <details className="crop-editor"><summary>사진 위치 조절 <span aria-hidden="true">＋</span></summary><div className="crop-controls">
+              <fieldset className="frame-picker"><legend>템플릿</legend><div>{(['flame', 'paper', 'ink'] as const).map((option) => <button key={option} type="button" aria-pressed={frame === option} onClick={() => setFrame(option)} className={`frame-option ${option}`}><span aria-hidden="true" />{option === 'flame' ? 'Flame' : option === 'paper' ? '화이트' : '블랙'}</button>)}</div></fieldset>
+              {(frame === 'flame' || photo) && <div className="customize-row">
+              {frame === 'flame' && <details className="caption-editor"><summary>한 줄 소개 <span aria-hidden="true">＋</span></summary><div className="caption-controls"><label htmlFor="card-note">카드에 넣을 문장</label><input id="card-note" value={cardNote} onChange={(event) => setCardNote(event.currentTarget.value)} maxLength={32} placeholder="직접 적어 주세요" /><small>{cardNote.length}/32</small></div></details>}
+              {photo && <details className="crop-editor"><summary>사진 위치 <span aria-hidden="true">＋</span></summary><div className="crop-controls">
                 <label><span>확대</span><input type="range" min="1" max="3" step="0.01" value={crop.zoom} onChange={(event) => setCrop({ ...crop, zoom: Number(event.currentTarget.value) })} /><output>{crop.zoom.toFixed(1)}×</output></label>
                 <label><span>좌우</span><input type="range" min="0" max="1" step="0.01" value={crop.x} onChange={(event) => setCrop({ ...crop, x: Number(event.currentTarget.value) })} /></label>
                 <label><span>상하</span><input type="range" min="0" max="1" step="0.01" value={crop.y} onChange={(event) => setCrop({ ...crop, y: Number(event.currentTarget.value) })} /></label>
                 <button className="text-button" onClick={() => setCrop(DEFAULT_CROP)}>처음 구도로</button>
               </div></details>}
+              </div>}
               <button className="button save-button" disabled={!photo || busy || saving} onClick={() => void saveCard()}>{saving ? '저장 중…' : '카드 저장'}<Arrow down /></button>
             </div>
           </section>
@@ -287,8 +292,12 @@ function App() {
       <footer className="studio-footer"><span>CARD GGANG © {new Date().getFullYear()}</span><span>사진은 서버에 저장하지 않아요.</span></footer>
       <dialog ref={helpRef} className="help-dialog" onClick={(event) => { if (event.target === event.currentTarget) helpRef.current?.close() }}>
         <div className="dialog-heading"><h2>카드 만드는 법</h2><button className="close-button" aria-label="닫기" onClick={() => helpRef.current?.close()}>×</button></div>
-        <ol><li><strong>사진을 준비하세요.</strong><p>카메라를 켜서 찍거나 기기에 있는 사진을 불러옵니다.</p></li><li><strong>카드를 꾸미세요.</strong><p>이름과 프레임을 고르고, 사진 위치 조절에서 구도를 맞춥니다.</p></li><li><strong>카드를 저장하세요.</strong><p>미리보기 그대로 PNG 파일로 내려받습니다.</p></li></ol>
+        <ol><li><strong>사진을 준비하세요.</strong><p>카메라를 켜서 찍거나 기기에 있는 사진을 불러옵니다.</p></li><li><strong>카드를 꾸미세요.</strong><p>이름과 템플릿을 고르고, 사진 위치에서 구도를 맞춥니다.</p></li><li><strong>카드를 저장하세요.</strong><p>미리보기 그대로 PNG 파일로 내려받습니다.</p></li></ol>
         <p className="dialog-note">사진은 이 기기에서만 처리합니다. 새로고침하면 작업 내용이 사라지니 완성한 카드는 저장해 주세요.</p>
+      </dialog>
+      <dialog ref={previewRef} className="preview-dialog" aria-label="포토카드 크게 보기" onClick={(event) => { if (event.target === event.currentTarget) previewRef.current?.close() }}>
+        <div className="preview-dialog-heading"><span>완성 카드 미리보기</span><button type="button" className="text-button" onClick={() => previewRef.current?.close()}>닫기 ×</button></div>
+        <PhotoPreview card image={photo} crop={crop} name={cardName} note={cardNote} frame={frame} />
       </dialog>
     </div>
   )
