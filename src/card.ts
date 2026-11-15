@@ -4,13 +4,13 @@ export const CARD = {
   width: 640,
   height: 960,
   photo: { x: 32, y: 64, width: 576, height: 720 },
-  flamePhoto: { x: 40, y: 100, width: 560, height: 700 },
+  collectorPhoto: { x: 52, y: 156, width: 536, height: 670 },
 }
 export type Crop = { zoom: number; x: number; y: number }
-export type Frame = 'paper' | 'ink' | 'flame'
+export type Frame = 'paper' | 'ink' | 'collector'
 export const DEFAULT_CROP: Crop = { zoom: 1, x: 0.5, y: 0.5 }
 
-// 두 미리보기와 PNG가 같은 원본 영역을 사용해야 촬영 구도가 바뀌지 않는다.
+// 촬영 화면과 모든 카드에서 같은 원본 영역을 사용한다.
 export function cropRect(width: number, height: number, crop: Crop) {
   const aspect = PHOTO.width / PHOTO.height
   const cropWidth = Math.min(width, height * aspect) / crop.zoom
@@ -54,11 +54,19 @@ export function drawPhoto(context: CanvasRenderingContext2D, image: HTMLImageEle
   context.drawImage(image, source.x, source.y, source.width, source.height, 0, 0, width, height)
 }
 
-function drawSpark(context: CanvasRenderingContext2D, x: number, y: number, size: number) {
+function fittedText(context: CanvasRenderingContext2D, text: string, size: number, minSize: number, maxWidth: number, weight = 600) {
+  context.font = `${weight} ${size}px "SUIT Variable", sans-serif`
+  while (context.measureText(text).width > maxWidth && size > minSize) {
+    size -= 1
+    context.font = `${weight} ${size}px "SUIT Variable", sans-serif`
+  }
+}
+
+function drawSpark(context: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) {
   context.save()
   context.translate(x, y)
-  context.strokeStyle = '#f4d28f'
-  context.lineWidth = 1.4
+  context.strokeStyle = color
+  context.lineWidth = 2
   context.lineCap = 'round'
   context.beginPath()
   context.moveTo(0, -size); context.quadraticCurveTo(2, -2, size, 0)
@@ -69,170 +77,190 @@ function drawSpark(context: CanvasRenderingContext2D, x: number, y: number, size
   context.restore()
 }
 
-function drawFlameCard(context: CanvasRenderingContext2D, image: HTMLImageElement | null, crop: Crop, name: string, note: string) {
-  const { width, height, flamePhoto: photo } = CARD
-  const gold = '#e5b86f'
-  context.fillStyle = '#26141b'
+function drawCollectorCard(context: CanvasRenderingContext2D, image: HTMLImageElement | null, crop: Crop, name: string, note: string) {
+  const { width, height, collectorPhoto: photo } = CARD
+  const ink = '#29352f'
+  const cream = '#fcf5e6'
+  const mint = '#c6dfce'
+  const coral = '#df8f96'
+  const butter = '#f7dfaa'
+  context.fillStyle = coral
   context.fillRect(0, 0, width, height)
-
-  // 바깥 인쇄선과 반복 빗금은 원본 작품의 프레임을 사용하지 않는 카드깡 고유 장식이다.
-  context.strokeStyle = '#a83544'
-  context.lineWidth = 18
-  context.strokeRect(9, 9, width - 18, height - 18)
-  context.strokeStyle = gold
-  context.lineWidth = 2
-  context.strokeRect(19, 19, width - 38, height - 38)
-  context.strokeStyle = 'rgba(229,184,111,.42)'
-  context.lineWidth = 1
-  for (let y = 123; y < 760; y += 21) {
-    context.beginPath(); context.moveTo(21, y + 6); context.lineTo(31, y); context.stroke()
-    context.beginPath(); context.moveTo(609, y + 6); context.lineTo(619, y); context.stroke()
-  }
-
-  context.fillStyle = '#f8efe5'
-  context.textAlign = 'left'
-  context.font = '600 18px "SUIT Variable", sans-serif'
-  context.fillText('CARD GGANG', 43, 52)
-  context.fillStyle = gold
-  context.font = '500 24px "SUIT Variable", sans-serif'
-  context.fillText('FLAME', 43, 84)
-  context.strokeStyle = gold
-  context.lineWidth = 1.2
-  context.beginPath(); context.moveTo(155, 76); context.lineTo(478, 76); context.stroke()
-  context.font = '500 15px "SUIT Variable", sans-serif'
-  context.textAlign = 'right'
-  context.fillText('GG / 001', 589, 52)
-  context.beginPath(); context.arc(556, 75, 17, 0, Math.PI * 2); context.stroke()
+  context.fillStyle = cream
+  context.fillRect(17, 17, 606, 926)
+  context.strokeStyle = ink
+  context.lineWidth = 2.5
   context.beginPath()
-  context.moveTo(555, 62); context.bezierCurveTo(563, 69, 562, 75, 557, 81)
-  context.bezierCurveTo(561, 73, 552, 71, 553, 77)
-  context.bezierCurveTo(549, 83, 557, 88, 561, 81)
+  context.moveTo(18, 18)
+  context.quadraticCurveTo(320, 15, 622, 18)
+  context.lineTo(622, 942)
+  context.quadraticCurveTo(320, 945, 18, 942)
+  context.closePath()
   context.stroke()
+  context.fillStyle = butter
+  context.fillRect(28, 29, 584, 121)
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.strokeRect(28, 29, 584, 121)
+  context.fillStyle = ink
+  context.textAlign = 'left'
+  context.font = '600 14px "SUIT Variable", sans-serif'
+  context.fillText('나만의 포토카드  /  001', 42, 56)
+  context.font = '25px Gaegu, sans-serif'
+  context.fillText('나만의 카드깡!!', 43, 137)
+  const label = name.trim() || '내 이름'
+  fittedText(context, label, 50, 23, 450)
+  context.fillText(label, 40, 107)
+  context.fillStyle = mint
+  context.beginPath(); context.arc(558, 88, 38, 0, Math.PI * 2); context.fill()
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.stroke()
+  context.fillStyle = ink
+  context.textAlign = 'center'
+  context.font = '600 22px "SUIT Variable", sans-serif'
+  context.fillText('1 / 1', 558, 96)
+  drawSpark(context, 474, 126, 8, ink)
+  drawSpark(context, 495, 123, 5, ink)
 
+  context.fillStyle = '#fffdfa'
+  context.fillRect(43, 151, 554, 684)
   context.save()
-  context.beginPath()
-  context.roundRect(photo.x, photo.y, photo.width, photo.height, 12)
-  context.clip()
-  context.save()
+  context.beginPath(); context.rect(photo.x, photo.y, photo.width, photo.height); context.clip()
   context.translate(photo.x, photo.y)
   drawPhoto(context, image, crop, photo.width, photo.height)
   context.restore()
-
-  // 사진의 중앙과 얼굴은 보존하고 가장자리만 색으로 묶는다.
-  const leftShade = context.createLinearGradient(photo.x, 0, photo.x + 100, 0)
-  leftShade.addColorStop(0, 'rgba(54,12,27,.53)')
-  leftShade.addColorStop(1, 'rgba(54,12,27,0)')
-  context.fillStyle = leftShade; context.fillRect(photo.x, photo.y, 100, photo.height)
-  const rightShade = context.createLinearGradient(photo.x + photo.width, 0, photo.x + photo.width - 100, 0)
-  rightShade.addColorStop(0, 'rgba(54,12,27,.48)')
-  rightShade.addColorStop(1, 'rgba(54,12,27,0)')
-  context.fillStyle = rightShade; context.fillRect(photo.x + photo.width - 100, photo.y, 100, photo.height)
-  const footShade = context.createLinearGradient(0, 650, 0, 800)
-  footShade.addColorStop(0, 'rgba(35,11,22,0)')
-  footShade.addColorStop(1, 'rgba(35,11,22,.82)')
-  context.fillStyle = footShade; context.fillRect(photo.x, 650, photo.width, 150)
-
-  context.strokeStyle = 'rgba(255,227,181,.78)'
-  context.lineWidth = 1.3
-  context.beginPath()
-  context.moveTo(68, 303); context.bezierCurveTo(118, 287, 102, 244, 75, 224)
-  context.moveTo(574, 270); context.bezierCurveTo(529, 292, 548, 343, 585, 367)
-  context.moveTo(74, 575); context.bezierCurveTo(109, 550, 105, 524, 79, 497)
-  context.moveTo(568, 573); context.bezierCurveTo(534, 606, 552, 637, 584, 654)
-  context.stroke()
-  const sparks: Array<[number, number, number]> = [[82, 151, 12], [571, 178, 8], [87, 437, 7], [556, 506, 11], [101, 692, 6], [558, 715, 7]]
-  sparks.forEach(([x, y, size]) => drawSpark(context, x, y, size))
-  context.restore()
-
-  context.strokeStyle = gold
+  context.strokeStyle = ink
   context.lineWidth = 3
-  context.beginPath(); context.roundRect(photo.x + 1.5, photo.y + 1.5, photo.width - 3, photo.height - 3, 11); context.stroke()
-  context.strokeStyle = 'rgba(255,245,219,.55)'
+  context.strokeRect(46, 153, 548, 676)
+  context.strokeStyle = cream
   context.lineWidth = 1
-  context.beginPath(); context.roundRect(photo.x + 8, photo.y + 8, photo.width - 16, photo.height - 16, 7); context.stroke()
+  context.strokeRect(56, 160, 528, 660)
+  // 작은 인쇄 장식은 사진 가장자리만 지나간다.
+  drawSpark(context, 71, 191, 11, butter)
+  drawSpark(context, 567, 245, 8, butter)
+  drawSpark(context, 568, 634, 10, butter)
+  context.fillStyle = coral
+  context.beginPath(); context.arc(72, 560, 5, 0, Math.PI * 2); context.fill()
 
-  context.fillStyle = '#9f293f'
+  context.fillStyle = butter
+  context.fillRect(31, 695, 582, 211)
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.strokeRect(31, 695, 582, 211)
+  context.fillStyle = mint
   context.beginPath()
-  context.moveTo(21, 770); context.lineTo(573, 770); context.lineTo(620, 785)
-  context.lineTo(620, 864); context.lineTo(21, 864); context.closePath(); context.fill()
-  context.strokeStyle = gold; context.lineWidth = 2
-  context.beginPath(); context.moveTo(22, 771); context.lineTo(572, 771); context.lineTo(619, 786); context.stroke()
-  context.fillStyle = '#f0c889'
+  context.moveTo(35, 699); context.lineTo(608, 699)
+  context.lineTo(608, 818); context.lineTo(35, 818)
+  context.closePath()
+  context.fill()
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.stroke()
+  context.fillStyle = ink
   context.textAlign = 'left'
-  context.font = '500 16px "SUIT Variable", sans-serif'
-  context.fillText('FLAME SERIES', 46, 800)
-  context.textAlign = 'right'; context.fillText('01 / 01', 592, 800)
-  const label = name.trim() || 'YOUR NAME'
-  let size = 54
+  context.font = '600 15px "SUIT Variable", sans-serif'
+  context.fillText('한 줄 소개', 48, 730)
+  context.textAlign = 'right'
+  context.fillText('01 / 01', 591, 730)
   context.textAlign = 'left'
-  context.fillStyle = '#fff8ef'
-  context.font = `600 ${size}px "SUIT Variable", sans-serif`
-  while (context.measureText(label).width > 540 && size > 22) {
-    size -= 1
-    context.font = `600 ${size}px "SUIT Variable", sans-serif`
-  }
-  context.fillText(label, 46, 849)
-
-  context.fillStyle = '#f8efe5'
-  context.font = '400 24px "SUIT Variable", sans-serif'
   const description = note.trim()
   if (description) {
-    let noteSize = 24
-    while (context.measureText(description).width > 540 && noteSize > 14) {
-      noteSize -= 1
-      context.font = `400 ${noteSize}px "SUIT Variable", sans-serif`
-    }
-    context.fillText(description, 46, 898)
+    fittedText(context, description, 29, 16, 535, 500)
+    context.fillText(description, 47, 791)
+  } else {
+    context.font = '600 31px "SUIT Variable", sans-serif'
+    context.fillText('1 / 1', 47, 793)
   }
-  context.strokeStyle = 'rgba(229,184,111,.65)'
-  context.lineWidth = 1
-  context.beginPath(); context.moveTo(44, 913); context.lineTo(596, 913); context.stroke()
-  context.fillStyle = '#e5b86f'
-  context.font = '500 15px "SUIT Variable", sans-serif'
-  context.fillText('CARD GGANG  /  PHOTO EDITION', 46, 935)
-  context.textAlign = 'right'; context.fillText('GG / F-001', 592, 935)
-}
-
-export function drawCard(canvas: HTMLCanvasElement, image: HTMLImageElement | null, crop: Crop, name: string, frame: Frame, note = '') {
-  canvas.width = CARD.width * CARD_SCALE
-  canvas.height = CARD.height * CARD_SCALE
-  const context = canvas.getContext('2d')
-  if (!context) throw new Error('이 브라우저에서는 이미지를 만들 수 없습니다.')
-  context.scale(CARD_SCALE, CARD_SCALE)
-  if (frame === 'flame') {
-    drawFlameCard(context, image, crop, name, note)
-    return
-  }
-  const ink = frame === 'ink' ? '#fafafa' : '#20201e'
-  context.fillStyle = frame === 'ink' ? '#20201e' : '#ffffff'
-  context.fillRect(0, 0, CARD.width, CARD.height)
   context.fillStyle = ink
-  context.font = '500 18px "SUIT Variable", sans-serif'
-  context.fillText('CARD GGANG', 32, 39)
-  context.textAlign = 'right'
-  context.fillText('01', 607, 39)
-  context.save()
-  context.translate(CARD.photo.x, CARD.photo.y)
-  drawPhoto(context, image, crop, CARD.photo.width, CARD.photo.height)
-  context.restore()
+  context.font = '600 23px "SUIT Variable", sans-serif'
+  context.fillText('나의 기록 / 001', 47, 863)
+  context.font = '500 14px "SUIT Variable", sans-serif'
+  context.fillText('PHOTO CARD COLLECTION', 48, 887)
+  context.fillStyle = coral
+  context.beginPath(); context.arc(557, 861, 29, 0, Math.PI * 2); context.fill()
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.stroke()
+  drawSpark(context, 557, 861, 13, cream)
   context.fillStyle = ink
   context.textAlign = 'left'
-  const label = name.trim() || 'YOUR NAME'
-  let size = 45
-  context.font = `500 ${size}px "SUIT Variable", sans-serif`
-  while (context.measureText(label).width > 570 && size > 18) {
-    size -= 1
-    context.font = `500 ${size}px "SUIT Variable", sans-serif`
+  context.font = '500 12px "SUIT Variable", sans-serif'
+  context.fillText('사진으로 만든 한 장', 32, 928)
+  context.textAlign = 'right'
+  context.fillText('NO. 001', 608, 928)
+}
+
+function drawSimpleCard(context: CanvasRenderingContext2D, image: HTMLImageElement | null, crop: Crop, name: string, frame: 'paper' | 'ink') {
+  const sketch = frame === 'paper'
+  const ink = sketch ? '#252621' : '#f7f6f2'
+  context.fillStyle = sketch ? '#fbfaf6' : '#242722'
+  context.fillRect(0, 0, CARD.width, CARD.height)
+  context.strokeStyle = ink
+  context.lineWidth = sketch ? 2 : 2.5
+  context.beginPath()
+  context.moveTo(16, 18)
+  context.quadraticCurveTo(320, 14, 624, 19)
+  context.quadraticCurveTo(627, 480, 623, 944)
+  context.quadraticCurveTo(320, 948, 17, 943)
+  context.quadraticCurveTo(13, 480, 16, 18)
+  context.stroke()
+  context.fillStyle = ink
+  context.textAlign = 'left'
+  context.font = '500 18px "SUIT Variable", sans-serif'
+  context.fillText('나만의 카드깡!!', 32, 40)
+  context.textAlign = 'right'
+  context.fillText(sketch ? 'SKETCH / 01' : 'B&W / 01', 607, 40)
+  context.save()
+  context.translate(CARD.photo.x, CARD.photo.y)
+  if (!sketch) context.filter = 'grayscale(1)'
+  drawPhoto(context, image, crop, CARD.photo.width, CARD.photo.height)
+  context.restore()
+  context.strokeStyle = ink
+  context.lineWidth = 2
+  context.beginPath()
+  context.moveTo(31, 64)
+  context.quadraticCurveTo(320, 61, 609, 64)
+  context.lineTo(608, 784)
+  context.quadraticCurveTo(321, 787, 32, 784)
+  context.closePath()
+  context.stroke()
+  if (!sketch) {
+    context.fillStyle = ink
+    for (let y = 126; y < 750; y += 72) {
+      context.beginPath(); context.arc(20, y, 3, 0, Math.PI * 2); context.fill()
+      context.beginPath(); context.arc(620, y, 3, 0, Math.PI * 2); context.fill()
+    }
   }
+  const label = name.trim() || '내 이름'
+  context.fillStyle = ink
+  context.textAlign = 'left'
+  fittedText(context, label, sketch ? 52 : 48, 18, 570, sketch ? 500 : 600)
   context.fillText(label, 32, 858)
   context.strokeStyle = ink
   context.lineWidth = 1
   context.beginPath(); context.moveTo(32, 885); context.lineTo(608, 885); context.stroke()
-  context.font = '400 18px "Gaegu", sans-serif'
-  context.fillText('카드깡', 32, 925)
+  context.textAlign = 'left'
+  if (sketch) {
+    context.font = '22px Gaegu, sans-serif'
+    context.fillText('사진으로 만든 오늘의 카드', 32, 925)
+  } else {
+    context.font = '500 15px "SUIT Variable", sans-serif'
+    context.fillText('MONO PHOTO EDITION', 32, 924)
+  }
   context.font = '400 14px "SUIT Variable", sans-serif'
   context.textAlign = 'right'
-  context.fillText('PHOTO CARD / 01', 608, 924)
+  context.fillText('PHOTO CARD / 001', 608, 924)
+}
+
+export function drawCard(canvas: HTMLCanvasElement, image: HTMLImageElement | null, crop: Crop, name: string, frame: Frame, note = '', scale = CARD_SCALE) {
+  canvas.width = CARD.width * scale
+  canvas.height = CARD.height * scale
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('이 브라우저에서는 이미지를 만들 수 없습니다.')
+  context.scale(scale, scale)
+  if (frame === 'collector') drawCollectorCard(context, image, crop, name, note)
+  else drawSimpleCard(context, image, crop, name, frame)
 }
 
 export async function canvasBlob(canvas: HTMLCanvasElement): Promise<Blob> {

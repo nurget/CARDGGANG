@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { canvasBlob, DEFAULT_CROP, type Crop, type Frame } from './card'
 import PhotoPreview from './PhotoPreview'
 import SketchBooth from './SketchBooth'
+import LandingBooth from './LandingBooth'
 import './App.css'
 
 function Arrow({ down = false }: { down?: boolean }) {
@@ -26,13 +27,14 @@ function App() {
   const [photo, setPhoto] = useState<HTMLImageElement | null>(null)
   const [cardName, setCardName] = useState('')
   const [cardNote, setCardNote] = useState('')
-  const [frame, setFrame] = useState<Frame>('flame')
+  const [frame, setFrame] = useState<Frame>('paper')
   const [crop, setCrop] = useState<Crop>(DEFAULT_CROP)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<'photo' | 'card'>('photo')
+  const [entered, setEntered] = useState(false)
 
   useEffect(() => {
     mountedRef.current = true
@@ -205,7 +207,7 @@ function App() {
       downloadUrlRef.current = url
       const link = document.createElement('a')
       link.href = url
-      link.download = `카드깡-${cardName.trim().replace(/[\\/:*?"<>|]/g, '').slice(0, 24) || '포토카드'}.png`
+      link.download = `나만의 카드깡!!-${cardName.trim().replace(/[\\/:*?"<>|]/g, '').slice(0, 24) || '포토카드'}.png`
       document.body.append(link)
       link.click()
       link.remove()
@@ -220,25 +222,29 @@ function App() {
   }
 
   return (
-    <div className="studio-page">
+    <div className={entered ? 'studio-page' : 'landing-page'}>
+      {!entered && <LandingBooth onEnter={() => { setTab('photo'); setEntered(true) }} onHelp={() => helpRef.current?.showModal()} />}
+      {entered && <>
       <header className="studio-header">
-        <div className="wordmark" aria-label="카드깡">
+        <div className="wordmark" aria-label="나만의 카드깡!!">
           <svg width="31" height="36" viewBox="0 0 31 36" fill="none" aria-hidden="true"><path d="m7 3 21 2-2 29-21-2Z" stroke="currentColor" strokeWidth="1.5" /><path d="m4 7 21-3 3 29-22 2Z" fill="var(--paper)" stroke="currentColor" strokeWidth="1.5" /><path d="m8 12 13-2 2 15-13 2Z" stroke="currentColor" /><path d="m11 30 8-1" stroke="currentColor" /></svg>
-          <span>카드깡</span>
+          <span>나만의 카드깡!!</span>
         </div>
-        <span className="header-label">사진으로 만드는 포토카드</span>
-        <button className="text-button help-button" onClick={() => helpRef.current?.showModal()}>만드는 법 <span aria-hidden="true">↗</span></button>
+        <button className="header-label" type="button" aria-label="처음으로" onClick={() => { stopCamera(); setEntered(false) }}><span className="header-label-text">처음으로</span><span aria-hidden="true">↖</span></button>
+        <button className="text-button help-button" aria-label="만드는 법" onClick={() => helpRef.current?.showModal()}><span className="help-label">만드는 법</span><span aria-hidden="true">↗</span></button>
       </header>
 
       <main className="studio-main">
         <div className="intro">
-          <h1>내 사진으로, <span>카드 한 장.<svg viewBox="0 0 260 13" preserveAspectRatio="none" aria-hidden="true"><path d="M3 7Q101 1 256 6M32 11Q142 6 233 9" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg></span></h1>
-          <p>촬영하거나 사진을 골라 시작하세요.</p>
+          <span className="intro-index">나만의 카드깡!! / {tab === 'photo' ? '01' : '02'}</span>
+          <h1>{tab === 'photo' ? '사진 한 장, 넣어 주세요.' : '이제 카드를 꾸며요.'}</h1>
+          <p>{tab === 'photo' ? '찍거나, 앨범에서 골라도 좋아요.' : '이름을 적고 마음에 드는 모습으로 저장해요.'}</p>
         </div>
 
         <div className="mobile-tabs" aria-label="작업 화면 선택">
-          <button aria-pressed={tab === 'photo'} aria-controls="photo-panel" onClick={() => changeTab('photo')}>01 <span>사진</span></button>
-          <button aria-pressed={tab === 'card'} aria-controls="card-panel" onClick={() => changeTab('card')}>02 <span>카드</span>{photo && <span className="tab-ready" aria-label="사진 준비됨">✓</span>}</button>
+          <button aria-pressed={tab === 'photo'} aria-controls="photo-panel" onClick={() => changeTab('photo')}><span className="step-number">01</span> 사진 넣기</button>
+          <span className="step-line" aria-hidden="true" />
+          <button aria-pressed={tab === 'card'} aria-controls="card-panel" onClick={() => changeTab('card')}><span className="step-number">02</span> 카드 꾸미기{photo && <span className="tab-ready" aria-label="사진 준비됨">✓</span>}</button>
         </div>
 
         <div className="workspace" data-tab={tab}>
@@ -262,8 +268,6 @@ function App() {
             <div className="capture-note">{camera !== 'off' ? <button className="text-button" onClick={stopCamera}>카메라 끄기</button> : <span>JPG · PNG · WebP</span>}</div>
           </section>
 
-          <span className="workspace-arrow" aria-hidden="true"><svg viewBox="0 0 90 44" width="90" height="44" fill="none"><path d="M4 24Q39 9 79 22m-9-11 12 12-15 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-
           <section className="card-panel" id="card-panel" aria-label="카드 편집">
             <div className="panel-heading"><span>02</span><h2>카드 만들기</h2><span className="panel-note">미리보기</span></div>
             <div className="card-display">
@@ -272,9 +276,9 @@ function App() {
             </div>
             <div className="card-tools">
               <label className="name-field"><span>이름</span><input value={cardName} onChange={(event) => setCardName(event.currentTarget.value)} maxLength={18} placeholder="카드에 넣을 이름" autoComplete="off" /></label>
-              <fieldset className="frame-picker"><legend>템플릿</legend><div>{(['flame', 'paper', 'ink'] as const).map((option) => <button key={option} type="button" aria-pressed={frame === option} onClick={() => setFrame(option)} className={`frame-option ${option}`}><span aria-hidden="true" />{option === 'flame' ? 'Flame' : option === 'paper' ? '화이트' : '블랙'}</button>)}</div></fieldset>
-              {(frame === 'flame' || photo) && <div className="customize-row">
-              {frame === 'flame' && <details className="caption-editor"><summary>한 줄 소개 <span aria-hidden="true">＋</span></summary><div className="caption-controls"><label htmlFor="card-note">카드에 넣을 문장</label><input id="card-note" value={cardNote} onChange={(event) => setCardNote(event.currentTarget.value)} maxLength={32} placeholder="직접 적어 주세요" /><small>{cardNote.length}/32</small></div></details>}
+              <fieldset className="frame-picker"><legend>템플릿</legend><div>{(['paper', 'ink', 'collector'] as const).map((option) => <button key={option} type="button" aria-pressed={frame === option} onClick={() => setFrame(option)} className={`frame-option ${option}`}><PhotoPreview card thumbnail image={photo} crop={crop} name={cardName} note={cardNote} frame={option} /><span>{option === 'paper' ? '스케치' : option === 'ink' ? '흑백' : '컬렉터'}</span></button>)}</div></fieldset>
+              {(frame === 'collector' || photo) && <div className="customize-row">
+              {frame === 'collector' && <details className="caption-editor"><summary>한 줄 소개 <span aria-hidden="true">＋</span></summary><div className="caption-controls"><label htmlFor="card-note">카드에 넣을 문장</label><input id="card-note" value={cardNote} onChange={(event) => setCardNote(event.currentTarget.value)} maxLength={32} placeholder="직접 적어 주세요" /><small>{cardNote.length}/32</small></div></details>}
               {photo && <details className="crop-editor"><summary>사진 위치 <span aria-hidden="true">＋</span></summary><div className="crop-controls">
                 <label><span>확대</span><input type="range" min="1" max="3" step="0.01" value={crop.zoom} onChange={(event) => setCrop({ ...crop, zoom: Number(event.currentTarget.value) })} /><output>{crop.zoom.toFixed(1)}×</output></label>
                 <label><span>좌우</span><input type="range" min="0" max="1" step="0.01" value={crop.x} onChange={(event) => setCrop({ ...crop, x: Number(event.currentTarget.value) })} /></label>
@@ -289,7 +293,8 @@ function App() {
         <p className={`status-message ${message ? 'has-message' : ''}`} role="status">{message}</p>
       </main>
 
-      <footer className="studio-footer"><span>CARD GGANG © {new Date().getFullYear()}</span><span>사진은 서버에 저장하지 않아요.</span></footer>
+      <footer className="studio-footer"><span>나만의 카드깡!! © {new Date().getFullYear()}</span><span>사진은 서버에 저장하지 않아요.</span></footer>
+      </>}
       <dialog ref={helpRef} className="help-dialog" onClick={(event) => { if (event.target === event.currentTarget) helpRef.current?.close() }}>
         <div className="dialog-heading"><h2>카드 만드는 법</h2><button className="close-button" aria-label="닫기" onClick={() => helpRef.current?.close()}>×</button></div>
         <ol><li><strong>사진을 준비하세요.</strong><p>카메라를 켜서 찍거나 기기에 있는 사진을 불러옵니다.</p></li><li><strong>카드를 꾸미세요.</strong><p>이름과 템플릿을 고르고, 사진 위치에서 구도를 맞춥니다.</p></li><li><strong>카드를 저장하세요.</strong><p>미리보기 그대로 PNG 파일로 내려받습니다.</p></li></ol>

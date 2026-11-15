@@ -1,8 +1,8 @@
 # Font sources
 
 - SUIT Variable: https://github.com/sun-typeface/SUIT (version 2), SIL Open Font License 1.1. License: SUIT-OFL.txt.
-- Gaegu Regular (Google Fonts text subset for the fixed UI labels): https://github.com/google/fonts/tree/main/ofl/gaegu, SIL Open Font License 1.1. License: Gaegu-OFL.txt.
+- Gaegu Regular (complete font, downloaded from the official Google Fonts repository and converted to WOFF2): https://github.com/google/fonts/tree/main/ofl/gaegu, SIL Open Font License 1.1. License: Gaegu-OFL.txt.
 
 Font binaries are self-hosted. The app does not request fonts from third-party servers.
 
-Gaegu subset text: `카드깡!여기 보세요이렇게 나와요.사진이 들어갈 자리카드 만드는 법`. Update the subset when adding handwritten labels. User-entered names use the full SUIT font.
+The previous 24 KB Gaegu file contained only a small label subset. New Korean labels fell back to the system font one character at a time. The full font fixes mixed glyphs; user-entered card names use SUIT for predictable layout.

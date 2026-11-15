@@ -26,5 +26,5 @@ test('최대 확대와 가장자리 이동에서도 원본 바깥을 읽지 않�
 
 test('촬영 미리보기와 카드 슬롯은 같은 비율이다', () => {
   assert.equal(PHOTO.width / PHOTO.height, CARD.photo.width / CARD.photo.height)
-  assert.equal(PHOTO.width / PHOTO.height, CARD.flamePhoto.width / CARD.flamePhoto.height)
+  assert.equal(PHOTO.width / PHOTO.height, CARD.collectorPhoto.width / CARD.collectorPhoto.height)
 })

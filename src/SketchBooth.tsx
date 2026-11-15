@@ -23,7 +23,7 @@ export default function SketchBooth({ children }: { children: ReactNode }) {
           <path d="M28 500Q193 503 363 500" opacity=".35" />
           <path d="m322 9 4-8m10 14 8-6m-7 18 12-1" />
         </g>
-        <text x="74" y="78" fontFamily="Gaegu, sans-serif" fontSize="33" fill="currentColor">카드깡!</text>
+        <text x="74" y="77" fontFamily="Gaegu, sans-serif" fontSize="27" fill="currentColor">나만의 카드깡!!</text>
         <text x="193" y="467" textAnchor="middle" fontFamily="SUIT Variable, sans-serif" fontSize="7.5" letterSpacing="2" fill="currentColor">PHOTO CARD MACHINE</text>
       </svg>
       <div className="booth-viewfinder">{children}</div>
